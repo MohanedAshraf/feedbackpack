@@ -27,4 +27,7 @@ require('./routes/auth')(app)
 
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT)
+app.listen(PORT , (err) => {
+    if(err) console.log(err);
+    else console.log("Server is Running on Port:" , PORT);
+})

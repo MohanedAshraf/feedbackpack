@@ -22,9 +22,11 @@ passport.deserializeUser((id , done )=> {
 passport.use(new GoogleStrategy({
     clientID: googleClientID,
     clientSecret: googleClientSecret,
-    callbackURL: '/auth/google/callback'
+    callbackURL: '/auth/google/callback',
+    proxy: true
 } , (accessToken , refreshToken , profile  , done) => {
 
+    console.log("saosujojs");
     User.findOne({ googleId: profile.id}).then((existedUser) => {
         if(existedUser){
             done(null , existedUser)
