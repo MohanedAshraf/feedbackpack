@@ -10,7 +10,7 @@ const Mailer = require('../services/Mailer')
 const surveyTemplate = require('../services/emailTemplates/surveyTemplate')
 
 module.exports = app => {
-  app.get('/api/surveys/thanks', (req, res) => {
+  app.get('/api/surveys/:surveyId/:choice', (req, res) => {
     res.send('Thanks for voting')
   })
 
@@ -19,10 +19,25 @@ module.exports = app => {
     const events = [...new Set(req.body.map(({ url, email }) => {
       const match = p.test(new URL(url).pathname)
 
-      return match ? { email, surveyId: match.surveyId, choice: match } : undefined
+      return match ? { email, surveyId: match.surveyId, choice: match.choice } : undefined
     }).filter(item => item))]
 
-    console.log(events)
+    events.forEach(({ surveyId, email, choice }) => {
+      Survey.updateOne({
+        _id: surveyId,
+        recipients: {
+          $elemMatch: { email: email, responded: false }
+        }
+      }, {
+        $inc: { [choice]: 1 },
+        $set: { 'recipients.$.responded': true },
+        lastResponded: new Date()
+      }).exec()
+
+      console.log({ surveyId, email, choice })
+    })
+
+    res.send({})
   })
 
   app.post('/api/surveys', requireLogin, requireCredits, async (req, res) => {
