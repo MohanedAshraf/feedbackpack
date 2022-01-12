@@ -10,6 +10,11 @@ const Mailer = require('../services/Mailer')
 const surveyTemplate = require('../services/emailTemplates/surveyTemplate')
 
 module.exports = app => {
+  app.get('/api/surveys', requireLogin, async (req, res) => {
+    const surveys = await Survey.find({ _user: req.user.id }).select({ recipients: 0 })
+    res.send(surveys)
+  })
+
   app.get('/api/surveys/:surveyId/:choice', (req, res) => {
     res.send('Thanks for voting')
   })
@@ -33,8 +38,6 @@ module.exports = app => {
         $set: { 'recipients.$.responded': true },
         lastResponded: new Date()
       }).exec()
-
-      console.log({ surveyId, email, choice })
     })
 
     res.send({})
